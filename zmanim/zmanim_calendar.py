@@ -12,7 +12,7 @@ class ZmanimCalendar(AstronomicalCalendar):
 	"""
  	The ZmanimCalendar is a specialized calendar that can calculate sunrise, sunset and Jewish zmanim.
     (religious times) for prayers and other Jewish religious duties. This class contains the main functionality of the
-    Zmanim library.
+	Zmanim library.
  	"""
     def __init__(
         self,
