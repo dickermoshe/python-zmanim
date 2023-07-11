@@ -1,13 +1,17 @@
 import copy
 from datetime import timedelta
 from datetime import date as dt_date
-from enum import Enum
 from memoization import cached
 from typing import Optional, Tuple
 
+from zmanim.hebrew_calendar.constants import JEWISH_MONTHS, CHESHVAN_KISLEV_KEVIAH
+
 
 class JewishDate:
-    MONTHS = Enum('Months', 'nissan iyar sivan tammuz av elul tishrei cheshvan kislev teves shevat adar adar_ii')
+    """
+    A class that represents a Jewish date.
+    """
+    MONTHS = JEWISH_MONTHS
     MONTHS_LIST = list(MONTHS)
 
     RD = dt_date(1, 1, 1)
@@ -20,9 +24,35 @@ class JewishDate:
 
     CHALAKIM_MOLAD_TOHU = CHALAKIM_PER_DAY + (CHALAKIM_PER_HOUR * 5) + 204
 
-    CHESHVAN_KISLEV_KEVIAH = Enum('Kviah', 'chaseirim kesidran shelaimim')
+    CHESHVAN_KISLEV_KEVIAH = CHESHVAN_KISLEV_KEVIAH
 
     def __init__(self, *args, **kwargs):
+        """
+        Initializes a JewishDate object.  
+        You can pass either a `datetime.date` object, a Jewish year, month, and day, or a molad.
+        If no arguments are passed, the date will be set to the current system date.
+        
+        Examples:
+            ```
+            # Using Current Date
+            >>> JewishDate()        
+            <zmanim.hebrew_calendar.jewish_date.JewishDate gregorian_date=datetime.date(2023, 7, 10) ... >
+            
+            # Using a `datetime.date` object
+            >>> from datetime import date
+            >>> d = date(2021,1,1) 
+            >>> JewishDate(d)        
+            <zmanim.hebrew_calendar.jewish_date.JewishDate gregorian_date=datetime.date(2021, 1, 1) ... >
+            
+            # Using the Jewish Year, Month, and Day
+            >>> JewishDate(5776,1,1) 
+            <zmanim.hebrew_calendar.jewish_date.JewishDate gregorian_date=datetime.date(2016, 4, 9), ... >
+            
+            # Using the Molad
+            >>> JewishDate(54692515673) 
+            <zmanim.hebrew_calendar.jewish_date.JewishDate gregorian_date=datetime.date(2017, 10, 20) ...>
+            ```
+        """
         if len(args) == 0:
             self.reset_date()
         elif len(args) == 3:
@@ -163,6 +193,10 @@ class JewishDate:
         self.date = dt_date(year, month, day)
 
     def forward(self, increment: int = 1) -> 'JewishDate':
+        """
+        Returns a new JewishDate object that is 'increment' days after the current date,
+        defaults is 1 day.
+        """
         if increment < 0:
             return self.back(-increment)
         if increment > 500:
@@ -195,6 +229,10 @@ class JewishDate:
         return self
 
     def back(self, decrement: int = 1) -> 'JewishDate':
+        """
+        Returns a new JewishDate object that is 'decrement' days before the current date,
+        defaults is 1 day.
+        """
         if decrement < 0:
             return self.forward(-decrement)
         if decrement > 500:
@@ -474,10 +512,10 @@ class JewishDate:
     @cached(ttl=30)
     def _days_in_jewish_month(month: int, year: int) -> int:
         m = JewishDate._jewish_month_name(month)
-        if (m in ('iyar', 'tammuz', 'elul', 'teves', 'adar_ii')) or \
-                (m == 'cheshvan' and not JewishDate._is_cheshvan_long(year)) or \
-                (m == 'kislev' and JewishDate._is_kislev_short(year)) or \
-                (m == 'adar' and not JewishDate._is_jewish_leap_year(year)):
+        if (m in (JEWISH_MONTHS.iyar.name, JEWISH_MONTHS.tammuz.name, JEWISH_MONTHS.elul.name, JEWISH_MONTHS.teves.name, JEWISH_MONTHS.adar_ii.name)) or \
+                (m == JEWISH_MONTHS.cheshvan.name and not JewishDate._is_cheshvan_long(year)) or \
+                (m == JEWISH_MONTHS.kislev.name and JewishDate._is_kislev_short(year)) or \
+                (m == JEWISH_MONTHS.adar.name and not JewishDate._is_jewish_leap_year(year)):
             return 29
         return 30
 
